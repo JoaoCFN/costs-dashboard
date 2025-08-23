@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { TrendingUp, TrendingDown, DollarSign, Cloud, Calendar } from 'lucide-react'
-import './App.css'
+import React, { useState, useEffect, useMemo } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Header from './components/Header';
+import Insights from './components/Insights';
+import MonthlyCostsEvolution from './components/Charts/MonthlyCostEvolution';
+import TopProviders from './components/Charts/TopProviders';
+import TrendCostsByProvider from './components/Charts/CostTrendsByProvider';
+import CostBreakdownByProvider from './components/Tables/CostBreakdownByProvider';
+import AWSCostDistribution from './components/Charts/AWSCostDistibution';
+import HerokuCostDistibution from './components/Charts/HerokuCostDistibution';
+import MetricCard from './components/MetricCard';
+import './App.css';
 
 const COLORS = ['#007BFF', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#f97316']
 
@@ -147,15 +150,15 @@ function App() {
       .sort((a, b) => b.total - a.total);
   }, [selectedMonth, memoizedCostsData]);
 
-  const top3Providers = useMemo(() => {
+  const topProviders = useMemo(() => {
     if (!memoizedCostsData) return [];
     return providerTotals.slice(0, 3);
   }, [providerTotals]);
 
-  const top3Total = useMemo(() => {
+  const topProvidersTotal = useMemo(() => {
     if (!memoizedCostsData) return 0;
-    return top3Providers.reduce((sum, provider) => sum + provider.total, 0);
-  }, [top3Providers]);
+    return topProviders.reduce((sum, provider) => sum + provider.total, 0);
+  }, [topProviders]);
 
   const costTrendData = useMemo(() => {
     if (!memoizedCostsData) return [];
@@ -322,28 +325,11 @@ function App() {
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <div className="flex items-center justify-between space-y-2">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight text-primary">Dashboard de Custos - Autódromo</h2>
-            <p className="text-muted-foreground">
-              Análise de custos de infraestrutura cloud para o produto Autódromo
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Selecionar período" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os meses</SelectItem>
-                {memoizedCostsData.uniqueMonths.map(month => (
-                  <SelectItem key={month} value={month}>{month}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <Header 
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+          memoizedCostsData={memoizedCostsData}
+        />
 
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
@@ -353,318 +339,81 @@ function App() {
 
           <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card className="bg-card text-card-foreground">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Custo Total</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedMonth === 'all' ? 'Últimos meses' : `Mês de ${selectedMonth}`}
-                  </p>
-                </CardContent>
-              </Card>
+              <MetricCard 
+                title={'Custo total'}
+                icon={'total'}
+                value={`$${totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                content={selectedMonth === 'all' ? 'Últimos meses' : `Mês de ${selectedMonth}`}
+              />
 
-              <Card className="bg-card text-card-foreground">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Média Mensal</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${avgMonthlyCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {memoizedCostsData.uniqueMonths[0]} a {memoizedCostsData.uniqueMonths[memoizedCostsData.uniqueMonths.length - 1]} 2025
-                  </p>
-                </CardContent>
-              </Card>
+              <MetricCard
+                title={'Média mensal'}
+                icon={'montly'}
+                value={`$${avgMonthlyCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                content={
+                  `${memoizedCostsData.uniqueMonths[0]} a ${memoizedCostsData.uniqueMonths[memoizedCostsData.uniqueMonths.length - 1]} 2025`
+                }
+              />
 
-              <Card className="bg-card text-card-foreground">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Crescimento</CardTitle>
-                  {monthlyGrowth > 0 ? <TrendingUp className="h-4 w-4 text-green-600" /> : <TrendingDown className="h-4 w-4 text-red-600" />}
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{monthlyGrowth.toFixed(1)}%</div>
-                  <p className="text-xs text-muted-foreground">
-                    {memoizedCostsData.uniqueMonths[0]} vs {memoizedCostsData.uniqueMonths[memoizedCostsData.uniqueMonths.length - 1]}
-                  </p>
-                </CardContent>
-              </Card>
+              <MetricCard
+                title={'Crescimento'}
+                icon={'growth'}
+                value={monthlyGrowth.toFixed(1)}
+                content={
+                  `${memoizedCostsData.uniqueMonths[0]} vs ${memoizedCostsData.uniqueMonths[memoizedCostsData.uniqueMonths.length - 1]}`
+                }
+              />
 
-              <Card className="bg-card text-card-foreground">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Provedores</CardTitle>
-                  <Cloud className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{memoizedCostsData.uniqueProviders.length}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {memoizedCostsData.uniqueProviders.join(', ')}
-                  </p>
-                </CardContent>
-              </Card>
+              <MetricCard
+                title={'Provedores'}
+                icon={'providers'}
+                value={memoizedCostsData.uniqueProviders.length}
+                content={memoizedCostsData.uniqueProviders.join(', ')}
+              />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4 bg-card text-card-foreground">
-                <CardHeader>
-                  <CardTitle>Evolução Mensal dos Custos</CardTitle>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <ResponsiveContainer width="100%" height={350}>
-                    <AreaChart data={monthlyTrend}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis dataKey="month" stroke="#888" />
-                      <YAxis stroke="#888" />
-                      <Tooltip 
-                        formatter={(value) => [`$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 'Custo Total']} 
-                        contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#333', color: '#000000' }}
-                        labelStyle={{ color: '#000000' }}
-                      />
-                      <Area type="monotone" dataKey="total" stroke="#007BFF" fill="#007BFF" fillOpacity={0.1} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+              <MonthlyCostsEvolution monthlyTrend={monthlyTrend} />
 
-              <Card className="col-span-3 bg-card text-card-foreground">
-                <CardHeader>
-                  <CardTitle>Top 3 Provedores</CardTitle>
-                  <CardDescription>
-                    Participação dos principais provedores
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
-                      <Pie
-                        data={top3Providers}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="total"
-                        label={({ provider, total }) => `${provider}: $${total.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`}
-                      >
-                        {top3Providers.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value, name, props) => [`$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, props.payload.provider]} 
-                        contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#333', color: '#000000' }}
-                        labelStyle={{ color: '#000000' }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="text-center text-sm text-muted-foreground mt-2">
-                    Custo total: ${top3Total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </div>
-                </CardContent>
-              </Card>
+              <TopProviders 
+                topProviders={topProviders} 
+                topProvidersTotal={topProvidersTotal} 
+                colors={COLORS} 
+              />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-7 bg-card text-card-foreground">
-                <CardHeader>
-                  <CardTitle>Tendência de Custos por Provedor</CardTitle>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <ResponsiveContainer width="100%" height={350}>
-                    <LineChart data={costTrendData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis dataKey="month" stroke="#888" />
-                      <YAxis stroke="#888" />
-                      <Tooltip 
-                        formatter={(value, name) => [`$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, name]} 
-                        contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#333', color: '#000000' }}
-                        labelStyle={{ color: '#000000' }}
-                      />
-                      <Legend />
-                      {memoizedCostsData.uniqueProviders.map((provider, index) => (
-                        <Line
-                          key={provider}
-                          type="monotone"
-                          dataKey={provider}
-                          stroke={COLORS[index % COLORS.length]}
-                          activeDot={{ r: 8 }}
-                        />
-                      ))}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+              <TrendCostsByProvider 
+                memoizedCostsData={memoizedCostsData}
+                costTrendData={costTrendData}
+                colors={COLORS}
+              />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-7 bg-card text-card-foreground">
-                <CardHeader>
-                  <CardTitle>Detalhamento de Custos por Provedor</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Provedor</TableHead>
-                        {memoizedCostsData.uniqueMonths.map(month => (
-                          <TableHead key={month}>{month}</TableHead>
-                        ))}
-                        <TableHead>Total</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {detailedCostsTable.map((row, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">{row.provider}</TableCell>
-                          {memoizedCostsData.uniqueMonths.map(month => (
-                            <TableCell key={month}>${row[month.toLowerCase()].toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
-                          ))}
-                          <TableCell className="font-bold">${row.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
+              <CostBreakdownByProvider 
+                memoizedCostsData={memoizedCostsData}
+                detailedCostsTable={detailedCostsTable}
+              />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4 bg-card text-card-foreground">
-                <CardHeader>
-                  <CardTitle>Distribuição de Custos - AWS</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={awsServicesData.filter(item => item.name !== 'Total')}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: $${value.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`}
-                      >
-                        {awsServicesData.filter(item => item.name !== 'Total').map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value, name, props) => [`$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, props.payload.name]} 
-                        contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#333', color: '#000000' }}
-                        labelStyle={{ color: '#000000' }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="text-center text-sm text-muted-foreground mt-2">
-                    Custo total: ${awsTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </div>
-                </CardContent>
-              </Card>
+              <AWSCostDistribution 
+                awsServicesData={awsServicesData}
+                awsTotal={awsTotal}
+                colors={COLORS}
+              />
 
-              <Card className="col-span-3 bg-card text-card-foreground">
-                <CardHeader>
-                  <CardTitle>Distribuição de Custos - Heroku</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={herokuServicesData.filter(item => item.name !== 'Total')}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: $${value.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`}
-                      >
-                        {herokuServicesData.filter(item => item.name !== 'Total').map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value, name, props) => [`$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, props.payload.name]} 
-                        contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#333', color: '#000000' }}
-                        labelStyle={{ color: '#000000' }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="text-center text-sm text-muted-foreground mt-2">
-                    Custo total: ${herokuTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </div>
-                </CardContent>
-              </Card>
+              <HerokuCostDistibution 
+                herokuServicesData={herokuServicesData}
+                herokuTotal={herokuTotal}
+                colors={COLORS}
+              />
             </div>
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-4">
-            <div className="grid gap-4">
-              <Card className="bg-card text-card-foreground">
-                <CardHeader>
-                  <CardTitle>Principais Descobertas</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-start space-x-2">
-                    <Badge variant="secondary" className="mt-1">1</Badge>
-                    <div>
-                      <p className="font-semibold">AWS S3 é o principal custo:</p>
-                      <p>Representa <span className="font-bold text-primary">42.9%</span> dos custos totais da AWS. Otimizar o uso do S3 (ciclos de vida, classes de armazenamento) pode gerar economias significativas.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <Badge variant="secondary" className="mt-1">2</Badge>
-                    <div>
-                      <p className="font-semibold">AWS RDS como candidato a Reserved Instances:</p>
-                      <p>Com <span className="font-bold text-primary">19.6%</span> dos custos da AWS, o RDS é um serviço estável e previsível. A compra de Reserved Instances pode reduzir o custo em até 30-40%.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <Badge variant="secondary" className="mt-1">3</Badge>
-                    <div>
-                      <p className="font-semibold">Novos provedores (Cloudflare, Make, Github) representam pequena parcela:</p>
-                      <p>Juntos, representam apenas <span className="font-bold text-primary">~1.3%</span> dos custos totais. Monitorar o crescimento desses custos é importante, mas o foco principal deve ser nos maiores provedores.</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card text-card-foreground">
-                <CardHeader>
-                  <CardTitle>Recomendações</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-start space-x-2">
-                    <Badge variant="secondary" className="mt-1">1</Badge>
-                    <div>
-                      <p className="font-semibold">Otimização de S3:</p>
-                      <p>Revisar políticas de ciclo de vida, identificar e arquivar dados pouco acessados para classes de armazenamento mais baratas (Glacier, Deep Archive).</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <Badge variant="secondary" className="mt-1">2</Badge>
-                    <div>
-                      <p className="font-semibold">Avaliar Reserved Instances para RDS:</p>
-                      <p>Analisar o padrão de uso do RDS e considerar a compra de Reserved Instances para reduzir custos a longo prazo.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <Badge variant="secondary" className="mt-1">3</Badge>
-                    <div>
-                      <p className="font-semibold">Monitoramento Contínuo:</p>
-                      <p>Implementar alertas para picos de custo inesperados e revisar relatórios de custos mensalmente para identificar novas oportunidades de otimização.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <Badge variant="secondary" className="mt-1">4</Badge>
-                    <div>
-                      <p className="font-semibold">Potencial de Economia:</p>
-                      <p>Com as otimizações sugeridas, estima-se um potencial de economia de <span className="font-bold text-primary">$2.500 - $3.500 por mês</span>, totalizando <span className="font-bold text-primary">$30.000 - $42.000 por ano</span>.</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <Insights />
           </TabsContent>
         </Tabs>
       </div>
@@ -673,5 +422,3 @@ function App() {
 }
 
 export default App;
-
-
