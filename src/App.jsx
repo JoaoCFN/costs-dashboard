@@ -300,22 +300,6 @@ function App() {
       ((memoizedCostsData.monthlyTotals[memoizedCostsData.monthlyTotals.length - 1].total - memoizedCostsData.monthlyTotals[0].total) / memoizedCostsData.monthlyTotals[0].total) * 100 : 0;
   }, [memoizedCostsData]);
 
-  const CustomTrendTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-card p-3 border border-border rounded-lg shadow-lg">
-          <p className="font-medium text-foreground">{`Mês: ${label}`}</p>
-          {payload.map((entry, index) => (
-            <p key={index} style={{ color: entry.color }}>
-              {`${entry.dataKey}: $${entry.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
   if (loading) return <div className="flex justify-center items-center min-h-screen text-2xl">Carregando dados...</div>;
   if (error) return <div className="flex justify-center items-center min-h-screen text-2xl text-red-500">Erro ao carregar dados: {error.message}</div>;
   
