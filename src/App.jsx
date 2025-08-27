@@ -13,9 +13,6 @@ import './App.css';
 
 const COLORS = ['#007BFF', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#f97316']
 
-const spreadsheetId = import.meta.env.VITE_SHEETS_SPREADSHEETID;
-const keyAPI = import.meta.env.VITE_SHEETS_KEYAPI; 
-
 function App() {
   const [selectedMonth, setSelectedMonth] = useState('all')
   const [costsData, setCostsData] = useState(null)
@@ -25,12 +22,12 @@ function App() {
   useEffect(() => {
     const getCostsData = async () => {
       try {
-        const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/A:Z?key=${keyAPI}`)
+        const response = await fetch(`/api/sheets`)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
-        const data = await response.json()
-        
+        const { data } = await response.json()
+
         const headers = data.values[0]
         const rows = data.values.slice(1)
 
@@ -99,7 +96,7 @@ function App() {
       }
     }
 
-    getCostsData()
+    getCostsData();
   }, [])
 
   // Ensure costsData is not null before using it in useMemo hooks
@@ -108,11 +105,11 @@ function App() {
   const filteredData = useMemo(() => {
     if (!memoizedCostsData) return [];
     let filtered = memoizedCostsData.detailedCosts;
-    
+
     if (selectedMonth !== 'all') {
       filtered = filtered.filter(item => item.month === selectedMonth);
     }
-    
+
     return filtered;
   }, [selectedMonth, memoizedCostsData]);
 
@@ -129,7 +126,7 @@ function App() {
   const providerTotals = useMemo(() => {
     if (!memoizedCostsData) return [];
     const totals = {};
-    
+
     if (memoizedCostsData.totalServiceProviders) {
       memoizedCostsData.totalServiceProviders.forEach(totalItem => {
         if (!totals[totalItem.provider]) {
@@ -140,7 +137,7 @@ function App() {
         }
       });
     }
-    
+
     return Object.entries(totals)
       .map(([provider, total]) => ({
         provider,
@@ -163,7 +160,7 @@ function App() {
   const costTrendData = useMemo(() => {
     if (!memoizedCostsData) return [];
     const trendData = {};
-    
+
     // Use totalServiceProviders for the trend data
     if (memoizedCostsData.totalServiceProviders) {
       memoizedCostsData.totalServiceProviders.forEach(totalItem => {
@@ -187,15 +184,15 @@ function App() {
   const detailedCostsTable = useMemo(() => {
     if (!memoizedCostsData) return [];
     const tableData = {};
-    
+
     const allCosts = [...memoizedCostsData.detailedCosts];
-    
+
     if (memoizedCostsData.totalServiceProviders) {
       memoizedCostsData.totalServiceProviders.forEach(totalItem => {
         allCosts.push(totalItem);
       });
     }
-    
+
     allCosts.forEach(item => {
       if (item.service === 'Total' && !memoizedCostsData.detailedCosts.some(d => d.provider === item.provider)) {
         if (!tableData[item.provider]) {
@@ -239,7 +236,7 @@ function App() {
           return acc;
         }, []);
     }
-    
+
     return data.map(service => ({
       name: service.service,
       value: service.cost
@@ -262,7 +259,7 @@ function App() {
           return acc;
         }, []);
     }
-    
+
     return data.map(service => ({
       name: service.service,
       value: service.cost
@@ -296,20 +293,20 @@ function App() {
 
   const monthlyGrowth = useMemo(() => {
     if (!memoizedCostsData) return 0;
-    return memoizedCostsData.monthlyTotals.length >= 2 ? 
+    return memoizedCostsData.monthlyTotals.length >= 2 ?
       ((memoizedCostsData.monthlyTotals[memoizedCostsData.monthlyTotals.length - 1].total - memoizedCostsData.monthlyTotals[0].total) / memoizedCostsData.monthlyTotals[0].total) * 100 : 0;
   }, [memoizedCostsData]);
 
   if (loading) return <div className="flex justify-center items-center min-h-screen text-2xl">Carregando dados...</div>;
   if (error) return <div className="flex justify-center items-center min-h-screen text-2xl text-red-500">Erro ao carregar dados: {error.message}</div>;
-  
+
   // Render the dashboard only when costsData is available
   if (!memoizedCostsData) return null;
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <Header 
+        <Header
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
           memoizedCostsData={memoizedCostsData}
@@ -323,7 +320,7 @@ function App() {
 
           <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <MetricCard 
+              <MetricCard
                 title={'Custo total'}
                 icon={'total'}
                 value={`$${totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
@@ -359,15 +356,15 @@ function App() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
               <MonthlyCostsEvolution monthlyTrend={monthlyTrend} />
 
-              <TopProviders 
-                topProviders={topProviders} 
-                topProvidersTotal={topProvidersTotal} 
-                colors={COLORS} 
+              <TopProviders
+                topProviders={topProviders}
+                topProvidersTotal={topProvidersTotal}
+                colors={COLORS}
               />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <TrendCostsByProvider 
+              <TrendCostsByProvider
                 memoizedCostsData={memoizedCostsData}
                 costTrendData={costTrendData}
                 colors={COLORS}
@@ -375,20 +372,20 @@ function App() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <CostBreakdownByProvider 
+              <CostBreakdownByProvider
                 memoizedCostsData={memoizedCostsData}
                 detailedCostsTable={detailedCostsTable}
               />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <AWSCostDistribution 
+              <AWSCostDistribution
                 awsServicesData={awsServicesData}
                 awsTotal={awsTotal}
                 colors={COLORS}
               />
 
-              <HerokuCostDistibution 
+              <HerokuCostDistibution
                 herokuServicesData={herokuServicesData}
                 herokuTotal={herokuTotal}
                 colors={COLORS}
