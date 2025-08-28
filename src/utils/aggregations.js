@@ -8,11 +8,13 @@ export function aggregateServices(costs, provider, selectedMonth) {
     )
     .reduce((acc, item) => {
       const existing = acc.find(s => s.service === item.service);
+
       if (existing) {
-        existing.cost += item.cost
+        existing.cost += item.cost;
       } else {
-        acc.push({ service: item.service, cost: item.cost })
+        acc.push({ service: item.service, cost: item.cost });
       }
-      return acc
+
+      return acc;
     }, [])
 }
