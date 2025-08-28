@@ -1,17 +1,16 @@
-import { useMemo } from 'react';
 import { aggregateServices } from '../utils/aggregations';
 
 export function useProviderServicesData(costsData, selectedMonth, provider) {
-  return useMemo(() => {
-    if (!costsData) return [];
-    const baseData =
-      selectedMonth === 'all'
-        ? costsData[`${provider.toLowerCase()}Services`]
-        : aggregateServices(costsData.detailedCosts, provider, selectedMonth);
+  if (!costsData) return [];
 
-    return baseData.map(service => ({
-      name: service.service,
-      value: service.cost
+  const costs = costsData.detailedCosts;
+
+  const aggregated = aggregateServices(costs, provider, selectedMonth);
+
+  return aggregated
+    .filter(item => item.service !== 'Total')
+    .map(item => ({
+      name: item.service,
+      value: item.cost
     }));
-  }, [costsData, selectedMonth, provider]);
 }
