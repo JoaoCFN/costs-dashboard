@@ -1,16 +1,13 @@
-# Autódromo Cost Dashboard
+# Dashboard de custos
 
-This project contains the frontend-only cost dashboard for Autódromo, which fetches data directly from a Google Sheet using serveless functions.
+Projeto React + Vite com serverless functions na Vercel para consumo seguro de APIs externas.
 
-## Getting Started (Vercel Mode)
+## Requisitos
+- Node.js >= 20
+- Vercel CLI (`npm i -g vercel`)
+- Conta Vercel
 
-To run this application with vercek:
-
-1. Install Vercel CLI:
-yarn global add vercel
-
-2. Install dependencies:
-yarn install
-
-3. Run project:
+## Setup local
+```bash
+npm install
 vercel dev
