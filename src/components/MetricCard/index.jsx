@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/Theme/card';
 import { DollarSign, TrendingUp, TrendingDown, Cloud } from 'lucide-react';
 
 function MetricCard({

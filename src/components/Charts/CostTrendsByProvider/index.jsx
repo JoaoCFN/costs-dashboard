@@ -1,8 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/Theme/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-import { formatCurrency } from '../../../utils/formatCurrency';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 function TrendCostsByProvider({
 	costTrendData,

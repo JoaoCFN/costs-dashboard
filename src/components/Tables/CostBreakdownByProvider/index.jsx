@@ -1,8 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/Theme/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Theme/table';
 
-import { formatCurrency } from '../../../utils/formatCurrency';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 function CostBreakdownByProvider({
 	memoizedCostsData,
