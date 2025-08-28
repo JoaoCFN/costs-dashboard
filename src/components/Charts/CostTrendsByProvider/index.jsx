@@ -21,7 +21,7 @@ function TrendCostsByProvider({
 						<XAxis dataKey="month" stroke="#888" />
 						<YAxis stroke="#888" />
 						<Tooltip
-							formatter={(value, name) => [`$${formatCurrency(value)}`, name]}
+							formatter={(value, name) => [`${formatCurrency(value)}`, name]}
 							contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#333', color: '#000000' }}
 							labelStyle={{ color: '#000000' }}
 						/>
