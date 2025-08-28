@@ -21,7 +21,7 @@ import { useAvgMonthlyCost } from './hooks/useAvgMonthlyCost';
 import { useMonthlyGrowth } from './hooks/useMonthlyGrowth';
 import { useProviderServicesData } from './hooks/useProviderServicesData';
 
-import { formatCurrency } from './services/formatCurrency';
+import { formatCurrency } from './utils/formatCurrency';
 
 import './App.css';
 

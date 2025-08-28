@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { aggregateServices } from '../services/aggregations';
+import { aggregateServices } from '../utils/aggregations';
 
 export function useProviderServicesData(costsData, selectedMonth, provider) {
   return useMemo(() => {

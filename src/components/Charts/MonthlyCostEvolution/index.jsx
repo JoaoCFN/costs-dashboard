@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-import { formatCurrency } from '../../../services/formatCurrency';
+import { formatCurrency } from '../../../utils/formatCurrency';
 
 function MonthlyCostsEvolution({
 	monthlyTrend

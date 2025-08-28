@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
-import { formatCurrency } from '../../../services/formatCurrency';
+import { formatCurrency } from '../../../utils/formatCurrency';
 
 function HerokuCostDistibution({
 	herokuServicesData,

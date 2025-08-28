@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { formatCurrency } from '../services/formatCurrency';
+import { formatCurrency } from '../utils/formatCurrency';
 
 export function useProviderTotals(costsData, selectedMonth) {
   return useMemo(() => {
