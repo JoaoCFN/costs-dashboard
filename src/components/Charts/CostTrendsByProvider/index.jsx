@@ -2,6 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+import { formatCurrency } from '../../../services/formatCurrency';
+
 function TrendCostsByProvider({
 	costTrendData,
 	memoizedCostsData,
@@ -18,8 +20,8 @@ function TrendCostsByProvider({
 						<CartesianGrid strokeDasharray="3 3" stroke="#333" />
 						<XAxis dataKey="month" stroke="#888" />
 						<YAxis stroke="#888" />
-						<Tooltip 
-							formatter={(value, name) => [`$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, name]} 
+						<Tooltip
+							formatter={(value, name) => [`$${formatCurrency(value)}`, name]}
 							contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#333', color: '#000000' }}
 							labelStyle={{ color: '#000000' }}
 						/>

@@ -9,6 +9,20 @@ import CostBreakdownByProvider from './components/Tables/CostBreakdownByProvider
 import AWSCostDistribution from './components/Charts/AWSCostDistibution';
 import HerokuCostDistibution from './components/Charts/HerokuCostDistibution';
 import MetricCard from './components/MetricCard';
+
+import { useFilteredData } from './hooks/useFilteredData';
+import { useMonthlyTrend } from './hooks/useMonthlyTrend';
+import { useProviderTotals } from './hooks/useProviderTotals';
+import { useTopProviders } from './hooks/useTopProviders';
+import { useCostTrendData } from './hooks/useCostTrendData';
+import { useDetailedCostsTable } from './hooks/useDetailedCostsTable';
+import { useTotalCost } from './hooks/useTotalCost';
+import { useAvgMonthlyCost } from './hooks/useAvgMonthlyCost';
+import { useMonthlyGrowth } from './hooks/useMonthlyGrowth';
+import { useProviderServicesData } from './hooks/useProviderServicesData';
+
+import { formatCurrency } from './services/formatCurrency';
+
 import './App.css';
 
 const COLORS = ['#007BFF', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#f97316']
@@ -99,203 +113,21 @@ function App() {
     getCostsData();
   }, [])
 
-  // Ensure costsData is not null before using it in useMemo hooks
   const memoizedCostsData = useMemo(() => costsData, [costsData]);
 
-  const filteredData = useMemo(() => {
-    if (!memoizedCostsData) return [];
-    let filtered = memoizedCostsData.detailedCosts;
-
-    if (selectedMonth !== 'all') {
-      filtered = filtered.filter(item => item.month === selectedMonth);
-    }
-
-    return filtered;
-  }, [selectedMonth, memoizedCostsData]);
-
-  const monthlyTrend = useMemo(() => {
-    if (!memoizedCostsData) return [];
-    return memoizedCostsData.monthlyTotals
-      .map(item => ({
-        month: item.month,
-        total: item.total,
-        formatted: `$${item.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-      }));
-  }, [memoizedCostsData]);
-
-  const providerTotals = useMemo(() => {
-    if (!memoizedCostsData) return [];
-    const totals = {};
-
-    if (memoizedCostsData.totalServiceProviders) {
-      memoizedCostsData.totalServiceProviders.forEach(totalItem => {
-        if (!totals[totalItem.provider]) {
-          totals[totalItem.provider] = 0;
-        }
-        if (selectedMonth === 'all' || totalItem.month === selectedMonth) {
-          totals[totalItem.provider] += totalItem.cost;
-        }
-      });
-    }
-
-    return Object.entries(totals)
-      .map(([provider, total]) => ({
-        provider,
-        total,
-        formatted: `$${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-      }))
-      .sort((a, b) => b.total - a.total);
-  }, [selectedMonth, memoizedCostsData]);
-
-  const topProviders = useMemo(() => {
-    if (!memoizedCostsData) return [];
-    return providerTotals.slice(0, 3);
-  }, [providerTotals]);
-
-  const topProvidersTotal = useMemo(() => {
-    if (!memoizedCostsData) return 0;
-    return topProviders.reduce((sum, provider) => sum + provider.total, 0);
-  }, [topProviders]);
-
-  const costTrendData = useMemo(() => {
-    if (!memoizedCostsData) return [];
-    const trendData = {};
-
-    // Use totalServiceProviders for the trend data
-    if (memoizedCostsData.totalServiceProviders) {
-      memoizedCostsData.totalServiceProviders.forEach(totalItem => {
-        if (!trendData[totalItem.month]) {
-          trendData[totalItem.month] = {};
-        }
-        if (!trendData[totalItem.month][totalItem.provider]) {
-          trendData[totalItem.month][totalItem.provider] = 0;
-        }
-        trendData[totalItem.month][totalItem.provider] += totalItem.cost;
-      });
-    }
-
-    return memoizedCostsData.uniqueMonths
-      .map(month => ({
-        month,
-        ...trendData[month]
-      }));
-  }, [memoizedCostsData]);
-
-  const detailedCostsTable = useMemo(() => {
-    if (!memoizedCostsData) return [];
-    const tableData = {};
-
-    const allCosts = [...memoizedCostsData.detailedCosts];
-
-    if (memoizedCostsData.totalServiceProviders) {
-      memoizedCostsData.totalServiceProviders.forEach(totalItem => {
-        allCosts.push(totalItem);
-      });
-    }
-
-    allCosts.forEach(item => {
-      if (item.service === 'Total' && !memoizedCostsData.detailedCosts.some(d => d.provider === item.provider)) {
-        if (!tableData[item.provider]) {
-          tableData[item.provider] = {};
-        }
-        if (!tableData[item.provider][item.month]) {
-          tableData[item.provider][item.month] = 0;
-        }
-        tableData[item.provider][item.month] += item.cost;
-      } else if (item.service !== 'Total') {
-        if (!tableData[item.provider]) {
-          tableData[item.provider] = {};
-        }
-        if (!tableData[item.provider][item.month]) {
-          tableData[item.provider][item.month] = 0;
-        }
-        tableData[item.provider][item.month] += item.cost;
-      }
-    });
-
-    return Object.entries(tableData).map(([provider, months]) => ({
-      provider,
-      ...memoizedCostsData.uniqueMonths.reduce((acc, month) => ({ ...acc, [month.toLowerCase()]: months[month] || 0 }), {}),
-      total: memoizedCostsData.uniqueMonths.reduce((sum, month) => sum + (months[month] || 0), 0)
-    })).sort((a, b) => b.total - a.total);
-  }, [memoizedCostsData]);
-
-  const awsServicesData = useMemo(() => {
-    if (!memoizedCostsData) return [];
-    let data = memoizedCostsData.awsServices;
-    if (selectedMonth !== 'all') {
-      data = memoizedCostsData.detailedCosts
-        .filter(item => item.provider === 'AWS' && item.month === selectedMonth && item.service !== 'Total')
-        .reduce((acc, item) => {
-          const existing = acc.find(service => service.service === item.service);
-          if (existing) {
-            existing.cost += item.cost;
-          } else {
-            acc.push({ service: item.service, cost: item.cost });
-          }
-          return acc;
-        }, []);
-    }
-
-    return data.map(service => ({
-      name: service.service,
-      value: service.cost
-    }));
-  }, [selectedMonth, memoizedCostsData]);
-
-  const herokuServicesData = useMemo(() => {
-    if (!memoizedCostsData) return [];
-    let data = memoizedCostsData.herokuServices;
-    if (selectedMonth !== 'all') {
-      data = memoizedCostsData.detailedCosts
-        .filter(item => item.provider === 'Heroku' && item.month === selectedMonth && item.service !== 'Total')
-        .reduce((acc, item) => {
-          const existing = acc.find(service => service.service === item.service);
-          if (existing) {
-            existing.cost += item.cost;
-          } else {
-            acc.push({ service: item.service, cost: item.cost });
-          }
-          return acc;
-        }, []);
-    }
-
-    return data.map(service => ({
-      name: service.service,
-      value: service.cost
-    }));
-  }, [selectedMonth, memoizedCostsData]);
-
-  const awsTotal = useMemo(() => {
-    if (!memoizedCostsData) return 0;
-    return awsServicesData.reduce((sum, service) => sum + service.value, 0);
-  }, [awsServicesData]);
-
-  const herokuTotal = useMemo(() => {
-    if (!memoizedCostsData) return 0;
-    return herokuServicesData.reduce((sum, service) => sum + service.value, 0);
-  }, [herokuServicesData]);
-
-  const totalCost = useMemo(() => {
-    if (!memoizedCostsData) return 0;
-    if (selectedMonth === 'all') {
-      return memoizedCostsData.monthlyTotals.reduce((sum, month) => sum + month.total, 0);
-    } else {
-      const monthData = memoizedCostsData.monthlyTotals.find(m => m.month === selectedMonth);
-      return monthData ? monthData.total : 0;
-    }
-  }, [selectedMonth, memoizedCostsData]);
-
-  const avgMonthlyCost = useMemo(() => {
-    if (!memoizedCostsData) return 0;
-    return memoizedCostsData.monthlyTotals.reduce((sum, item) => sum + item.total, 0) / memoizedCostsData.monthlyTotals.length;
-  }, [memoizedCostsData]);
-
-  const monthlyGrowth = useMemo(() => {
-    if (!memoizedCostsData) return 0;
-    return memoizedCostsData.monthlyTotals.length >= 2 ?
-      ((memoizedCostsData.monthlyTotals[memoizedCostsData.monthlyTotals.length - 1].total - memoizedCostsData.monthlyTotals[0].total) / memoizedCostsData.monthlyTotals[0].total) * 100 : 0;
-  }, [memoizedCostsData]);
+  const filteredData = useFilteredData(memoizedCostsData, selectedMonth);
+  const monthlyTrend = useMonthlyTrend(memoizedCostsData);
+  const providerTotals = useProviderTotals(memoizedCostsData, selectedMonth);
+  const { topProviders, topProvidersTotal } = useTopProviders(providerTotals);
+  const costTrendData = useCostTrendData(memoizedCostsData);
+  const detailedCostsTable = useDetailedCostsTable(memoizedCostsData);
+  const awsServicesData = useProviderServicesData(memoizedCostsData, selectedMonth, 'AWS');
+  const herokuServicesData = useProviderServicesData(memoizedCostsData, selectedMonth, 'Heroku');
+  const awsTotal = awsServicesData.reduce((sum, s) => sum + s.value, 0);
+  const herokuTotal = herokuServicesData.reduce((sum, s) => sum + s.value, 0);
+  const totalCost = useTotalCost(memoizedCostsData, selectedMonth);
+  const avgMonthlyCost = useAvgMonthlyCost(memoizedCostsData);
+  const monthlyGrowth = useMonthlyGrowth(memoizedCostsData);
 
   if (loading) return <div className="flex justify-center items-center min-h-screen text-2xl">Carregando dados...</div>;
   if (error) return <div className="flex justify-center items-center min-h-screen text-2xl text-red-500">Erro ao carregar dados: {error.message}</div>;
@@ -323,14 +155,14 @@ function App() {
               <MetricCard
                 title={'Custo total'}
                 icon={'total'}
-                value={`$${totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                value={`${formatCurrency(totalCost)}`}
                 content={selectedMonth === 'all' ? 'Últimos meses' : `Mês de ${selectedMonth}`}
               />
 
               <MetricCard
                 title={'Média mensal'}
                 icon={'montly'}
-                value={`$${avgMonthlyCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                value={`${formatCurrency(avgMonthlyCost)}`}
                 content={
                   `${memoizedCostsData.uniqueMonths[0]} a ${memoizedCostsData.uniqueMonths[memoizedCostsData.uniqueMonths.length - 1]} 2025`
                 }

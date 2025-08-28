@@ -2,6 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
+import { formatCurrency } from '../../../services/formatCurrency';
+
 function CostBreakdownByProvider({
 	memoizedCostsData,
 	detailedCostsTable
@@ -27,9 +29,9 @@ function CostBreakdownByProvider({
 							<TableRow key={index}>
 								<TableCell className="font-medium">{row.provider}</TableCell>
 								{memoizedCostsData.uniqueMonths.map(month => (
-									<TableCell key={month}>${row[month.toLowerCase()].toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
+									<TableCell key={month}>{formatCurrency(row[month.toLowerCase()])}</TableCell>
 								))}
-								<TableCell className="font-bold">${row.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
+								<TableCell className="font-bold">{formatCurrency(row.total)}</TableCell>
 							</TableRow>
 						))}
 					</TableBody>
