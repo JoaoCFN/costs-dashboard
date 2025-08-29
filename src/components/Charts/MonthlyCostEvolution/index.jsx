@@ -8,7 +8,7 @@ function MonthlyCostsEvolution({
 	monthlyTrend
 }) {
 	return (
-		<Card className="col-span-4 bg-card text-card-foreground">
+		<Card className="col-span-6 bg-card text-card-foreground">
 			<CardHeader>
 				<CardTitle>Evolução Mensal dos Custos</CardTitle>
 			</CardHeader>

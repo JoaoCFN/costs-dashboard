@@ -10,7 +10,7 @@ function TopProviders({
 	colors
 }) {
 	return (
-		<Card className="col-span-3 bg-card text-card-foreground">
+		<Card className="col-span-6 bg-card text-card-foreground">
 			<CardHeader>
 				<CardTitle>Top 3 Provedores</CardTitle>
 				<CardDescription>

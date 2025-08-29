@@ -9,7 +9,7 @@ function CostBreakdownByProvider({
 	detailedCostsTable
 }) {
 	return (
-		<Card className="col-span-7 bg-card text-card-foreground">
+		<Card className="col-span-7 bg-card text-card-foreground w-full overflow-scroll">
 			<CardHeader>
 				<CardTitle>Detalhamento de Custos por Provedor</CardTitle>
 			</CardHeader>

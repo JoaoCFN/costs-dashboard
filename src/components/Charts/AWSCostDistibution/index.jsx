@@ -5,7 +5,7 @@ import { formatCurrency } from '@/utils/formatCurrency';
 
 function AWSCostDistribution({ awsServicesData, awsTotal, colors }) {
   return (
-    <Card className="col-span-4 bg-card text-card-foreground">
+    <Card className="col-span-6 bg-card text-card-foreground">
       <CardHeader>
         <CardTitle>Distribuição de Custos - AWS</CardTitle>
       </CardHeader>

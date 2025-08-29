@@ -97,7 +97,7 @@ function App() {
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-12">
               <MonthlyCostsEvolution monthlyTrend={monthlyTrend} />
 
               <TopProviders
@@ -122,7 +122,7 @@ function App() {
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-12">
               <AWSCostDistribution
                 awsServicesData={awsServicesData}
                 awsTotal={awsTotal}
