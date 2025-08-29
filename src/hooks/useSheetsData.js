@@ -11,8 +11,8 @@ export function useSheetsData() {
       const parsed = parseSheetsData(rawData.data);
       return transformSheetsData(parsed);
     },
-    staleTime: 1000 * 60 * 5,
-    cacheTime: 10 * 60 * 1000,
+    staleTime: 1000 * 60 * 60 * 24,
+    cacheTime: 1000 * 60 * 60 * 24,
     refetchOnWindowFocus: false,
   });
 }

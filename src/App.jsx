@@ -138,7 +138,9 @@ function App() {
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-4">
-            <Insights />
+            <Insights
+              costsData={costsData}
+            />
           </TabsContent>
         </Tabs>
       </div>

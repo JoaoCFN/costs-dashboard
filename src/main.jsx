@@ -10,8 +10,8 @@ import './index.css';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,
-      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60 * 60 * 24,
+      cacheTime: 1000 * 60 * 60 * 24,
       refetchOnWindowFocus: false,
     },
   },
@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
 persistQueryClient({
   queryClient,
   persister: localStoragePersister,
-  maxAge: 1000 * 60 * 5,
+  maxAge: 1000 * 60 * 60 * 24,
 });
 
 createRoot(document.getElementById('root')).render(

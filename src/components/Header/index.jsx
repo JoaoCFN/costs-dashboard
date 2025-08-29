@@ -10,7 +10,7 @@ function Header({
 	return (
 		<div className="flex items-center justify-between space-y-2">
 			<div>
-				<h2 className="text-3xl font-bold tracking-tight text-primary">Dashboard de Custos - Autódromo</h2>
+				<h2 className="text-3xl font-bold tracking-tight text-primary">Dashboard de custos - Autódromo</h2>
 				<p className="text-muted-foreground">
 					Análise de custos de infraestrutura cloud para o produto Autódromo
 				</p>
