@@ -85,7 +85,7 @@ function App() {
               <MetricCard
                 title={'Crescimento'}
                 icon={'growth'}
-                value={monthlyGrowth.toFixed(1)}
+                value={`${monthlyGrowth.toFixed(1)}%`}
                 content={`${costsData.uniqueMonths[0]} vs ${costsData.uniqueMonths[costsData.uniqueMonths.length - 1]}`}
               />
 
